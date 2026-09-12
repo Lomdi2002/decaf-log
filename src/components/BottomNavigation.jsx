@@ -16,6 +16,9 @@ function BottomNavigation() {
       <NavLink to="/history" className={navLinkClassName}>
         履歴
       </NavLink>
+      <NavLink to="/settings" className={navLinkClassName}>
+        設定
+      </NavLink>
     </nav>
   )
 }

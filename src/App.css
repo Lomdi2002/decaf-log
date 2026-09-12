@@ -147,6 +147,12 @@
   margin: 0;
 }
 
+.form-success {
+  color: #2e7d32;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
 .page-error {
   color: #b3261e;
 }
