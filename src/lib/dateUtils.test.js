@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
-import { formatDate, formatTime, isToday, toDatetimeLocalValue } from './dateUtils'
+import { formatDate, formatTime, isToday, toDatetimeLocalValue, getLocalDateKey } from './dateUtils'
 
 describe('dateUtils', () => {
   afterEach(() => {
@@ -38,5 +38,12 @@ describe('dateUtils', () => {
 
   it('toDatetimeLocalValue はローカルタイムゾーンの datetime-local 文字列を返す', () => {
     expect(toDatetimeLocalValue('2026-09-12T09:05:00+09:00')).toBe('2026-09-12T09:05')
+  })
+
+  it('TEST-301: getLocalDateKey はローカルタイムゾーン基準で YYYY-MM-DD 形式のキーを返す', () => {
+    // UTCでは2026-09-12だが、ローカル(JST, +09:00)では2026-09-13になるケース。
+    // UTC日付文字列の切り出しではなく、ローカルタイムゾーンの日付を返すことを確認する。
+    expect(getLocalDateKey('2026-09-13T00:30:00+09:00')).toBe('2026-09-13')
+    expect(getLocalDateKey('2026-09-12T23:50:00+09:00')).toBe('2026-09-12')
   })
 })

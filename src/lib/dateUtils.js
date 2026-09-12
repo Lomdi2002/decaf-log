@@ -38,6 +38,15 @@ export function isToday(dateInput) {
 }
 
 /**
+ * 日付を "YYYY-MM-DD" 形式（ローカルタイムゾーン）のキーとして返す。
+ * 日別集計（Version 1.3の日別カフェイン摂取量グラフ等）でのグループ化キーに使う。
+ */
+export function getLocalDateKey(dateInput) {
+  const date = new Date(dateInput)
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`
+}
+
+/**
  * <input type="datetime-local"> の value 属性用に、
  * ローカルタイムゾーンの "YYYY-MM-DDTHH:mm" 文字列を返す。
  * 初期値（現在日時）の生成に使用する。

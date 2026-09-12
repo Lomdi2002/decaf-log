@@ -10,6 +10,12 @@ vi.mock('../lib/caffeineRecords', () => ({
   deleteRecord: vi.fn(),
 }))
 
+// Version 1.3: DailyChart（Recharts）は実描画に依存させず、渡されたdataのみを
+// 検証できる軽量なダミーコンポーネントに差し替える。
+vi.mock('../components/DailyChart', () => ({
+  default: ({ data }) => <div data-testid="daily-chart" data-count={data.length} />,
+}))
+
 function renderPage() {
   return render(
     <MemoryRouter>
@@ -35,10 +41,11 @@ describe('HistoryPage', () => {
     expect(screen.getByText('緑茶')).toBeInTheDocument()
   })
 
-  it('読み込み中はローディング表示になる', () => {
+  it('読み込み中はローディング表示になる（グラフは表示されない）', () => {
     fetchRecords.mockReturnValue(new Promise(() => {}))
     renderPage()
     expect(screen.getByText('読み込み中...')).toBeInTheDocument()
+    expect(screen.queryByTestId('daily-chart')).not.toBeInTheDocument()
   })
 
   it('取得失敗時はエラーメッセージを表示する', async () => {
@@ -53,6 +60,41 @@ describe('HistoryPage', () => {
     fetchRecords.mockResolvedValueOnce([])
     renderPage()
     expect(await screen.findByText(/まだ記録がありません。/)).toBeInTheDocument()
+  })
+
+  it('TEST-310・TEST-311: 記録がある場合、日別グラフ（7日分）と記録一覧の両方が表示される', async () => {
+    fetchRecords.mockResolvedValueOnce([
+      { id: '1', drinkName: 'コーヒー', caffeineMg: 100, consumedAt: '2026-09-12T10:00:00+09:00' },
+    ])
+
+    renderPage()
+
+    expect(await screen.findByText('コーヒー')).toBeInTheDocument()
+    const chart = screen.getByTestId('daily-chart')
+    expect(chart).toBeInTheDocument()
+    expect(chart).toHaveAttribute('data-count', '7')
+  })
+
+  it('TEST-312: 記録が1件もない場合でも、7日分のグラフとEmpty状態がともに表示される', async () => {
+    fetchRecords.mockResolvedValueOnce([])
+
+    renderPage()
+
+    expect(await screen.findByText(/まだ記録がありません。/)).toBeInTheDocument()
+    const chart = screen.getByTestId('daily-chart')
+    expect(chart).toBeInTheDocument()
+    expect(chart).toHaveAttribute('data-count', '7')
+  })
+
+  it('TEST-313: 取得失敗時はグラフを表示しない（既存のError状態のみ表示する）', async () => {
+    fetchRecords.mockRejectedValueOnce(new Error('network error'))
+
+    renderPage()
+
+    expect(
+      await screen.findByText('データの取得に失敗しました。もう一度お試しください。'),
+    ).toBeInTheDocument()
+    expect(screen.queryByTestId('daily-chart')).not.toBeInTheDocument()
   })
 
   it('TEST-009: 削除処理を実行できる', async () => {
