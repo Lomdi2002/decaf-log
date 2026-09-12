@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom'
 import CaffeineSummary from '../components/CaffeineSummary'
 import RecentRecords from '../components/RecentRecords'
 import GoalProgress from '../components/GoalProgress'
+import StreakCard from '../components/StreakCard'
 import { fetchRecords } from '../lib/caffeineRecords'
 import { fetchGoal } from '../lib/appSettings'
 import { isToday } from '../lib/dateUtils'
+import { calculateStreak } from '../lib/streak'
 
 const FETCH_ERROR_MESSAGE = 'データの取得に失敗しました。もう一度お試しください。'
 const GOAL_FETCH_ERROR_MESSAGE = '目標を取得できませんでした。'
@@ -93,7 +95,14 @@ function DashboardPage() {
 
       {isGoalLoading && <p>読み込み中...</p>}
       {!isGoalLoading && goalError && <p className="page-error">{goalError}</p>}
-      {!isGoalLoading && !goalError && <GoalProgress todayTotalMg={todayTotalMg} goalMg={goal} />}
+      {!isGoalLoading && !goalError && (
+        <>
+          <GoalProgress todayTotalMg={todayTotalMg} goalMg={goal} />
+          {/* Version 1.4: 連続達成日数はGoalProgressと同じgoal取得状態を共有する。
+              StreakCard専用のSupabase通信・Loading/Error状態は追加しない。 */}
+          <StreakCard streak={calculateStreak(records, goal)} />
+        </>
+      )}
 
       {records.length === 0 ? (
         <div className="empty-state">
