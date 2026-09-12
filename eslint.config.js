@@ -17,5 +17,12 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // このMVPはSupabaseからのデータ取得にReact QueryなどのライブラリをMVPで採用せず、
+      // useEffect + fetch-on-mount というシンプルな標準パターンを使用する
+      // （CLAUDE.md: 不要な依存パッケージ・早すぎる抽象化を避ける）。
+      // このルールはそのパターン自体を警告してしまうため無効化する。
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])
