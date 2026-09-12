@@ -37,7 +37,7 @@
 - Supabase（PostgreSQL）
 - Vitest / React Testing Library
 - GitHub Actions（CI）
-- Vercel（デプロイ想定）
+- Vercel（本番デプロイ済み）
 
 ## セットアップ
 
