@@ -92,6 +92,8 @@ describe('DashboardPage', () => {
       // ページ全体のLoading（最初の一瞬）は既に終わっているはずなので、
       // ここで見えている「読み込み中...」は目標進捗部分のものである。
       expect(screen.getByText('読み込み中...')).toBeInTheDocument()
+      // 目標取得が終わっていない間は、GoalProgress・StreakCardとも表示されない。
+      expect(screen.queryByText('連続達成')).not.toBeInTheDocument()
     })
 
     it('目標未設定時、進捗バーの代わりに案内メッセージと/settings導線を表示する', async () => {
@@ -101,7 +103,8 @@ describe('DashboardPage', () => {
       renderPage()
 
       expect(await screen.findByText('1日の目標が設定されていません。')).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: '目標を設定する' })).toBeInTheDocument()
+      // GoalProgressの導線とStreakCardの導線、2つの「目標を設定する」リンクが存在する。
+      expect(screen.getAllByRole('link', { name: '目標を設定する' })).toHaveLength(2)
     })
 
     it('目標設定済みの場合、今日の合計をもとにした進捗が表示される', async () => {
@@ -130,6 +133,9 @@ describe('DashboardPage', () => {
       expect(await screen.findByText('100 mg')).toBeInTheDocument()
       expect(screen.getByText('コーヒー')).toBeInTheDocument()
       expect(screen.getByText('目標を取得できませんでした。')).toBeInTheDocument()
+      // 連続達成日数専用の別エラーメッセージは表示しない（GoalProgressと共通の1つのみ）。
+      expect(screen.queryByText('連続達成')).not.toBeInTheDocument()
+      expect(screen.getAllByText('目標を取得できませんでした。')).toHaveLength(1)
     })
 
     it('TEST-215: 記録取得に失敗した場合は、従来通りダッシュボード全体がError状態になる', async () => {
@@ -142,6 +148,43 @@ describe('DashboardPage', () => {
         await screen.findByText('データの取得に失敗しました。もう一度お試しください。'),
       ).toBeInTheDocument()
       expect(screen.queryByText('目標 200mg')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('連続達成日数（Version 1.4）', () => {
+    it('TEST-412相当: 目標未設定時、連続達成カードは案内表示になる', async () => {
+      fetchRecords.mockResolvedValueOnce([])
+      fetchGoal.mockResolvedValueOnce(null)
+
+      renderPage()
+
+      expect(await screen.findByText('連続達成')).toBeInTheDocument()
+      expect(screen.getByText('目標を設定すると連続達成日数を確認できます。')).toBeInTheDocument()
+      // GoalProgressの導線とStreakCardの導線、2つの「目標を設定する」リンクが存在する。
+      expect(screen.getAllByRole('link', { name: '目標を設定する' })).toHaveLength(2)
+    })
+
+    it('目標設定済みの場合、記録に基づいて連続達成日数が計算・表示される', async () => {
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      fetchRecords.mockResolvedValueOnce([
+        { id: '1', drinkName: 'コーヒー', caffeineMg: 50, consumedAt: yesterday.toISOString() },
+      ])
+      fetchGoal.mockResolvedValueOnce(200)
+
+      renderPage()
+
+      expect(await screen.findByText('連続達成')).toBeInTheDocument()
+      expect(screen.getByText('1日')).toBeInTheDocument()
+    })
+
+    it('記録が一度もない場合、連続達成日数は0日と表示される', async () => {
+      fetchRecords.mockResolvedValueOnce([])
+      fetchGoal.mockResolvedValueOnce(200)
+
+      renderPage()
+
+      expect(await screen.findByText('連続達成')).toBeInTheDocument()
+      expect(screen.getByText('0日')).toBeInTheDocument()
     })
   })
 })

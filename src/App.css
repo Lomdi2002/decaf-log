@@ -220,6 +220,26 @@
   font-size: 1rem;
 }
 
+.streak-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.streak-label {
+  margin: 0;
+  color: #6b6259;
+  font-size: 0.9rem;
+}
+
+.streak-value {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #6f4e37;
+}
+
 .daily-chart {
   width: 100%;
   overflow: hidden;
