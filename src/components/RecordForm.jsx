@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import DrinkPresetPicker from './DrinkPresetPicker'
 import { insertRecord } from '../lib/caffeineRecords'
 import { toDatetimeLocalValue } from '../lib/dateUtils'
 
@@ -71,6 +72,14 @@ function RecordForm() {
     navigate('/')
   }
 
+  // Version 1.5: プリセットは「飲み物」「カフェイン量」へ値をセットするだけの
+  // 入力ショートカット。選択中プリセットを表すstateは持たず、選択後も
+  // 両欄を自由に手動編集できる（既存のvalidate/handleSubmitは変更しない）。
+  function handlePresetSelect(preset) {
+    setDrinkName(preset.name)
+    setCaffeineMg(String(preset.caffeineMg))
+  }
+
   return (
     <form className="record-form" onSubmit={handleSubmit} noValidate>
       <div className="form-field">
@@ -85,6 +94,8 @@ function RecordForm() {
         />
         {errors.drinkName && <p className="form-error">{errors.drinkName}</p>}
       </div>
+
+      <DrinkPresetPicker onSelect={handlePresetSelect} disabled={isSubmitting} />
 
       <div className="form-field">
         <label htmlFor="caffeineMg">カフェイン量</label>

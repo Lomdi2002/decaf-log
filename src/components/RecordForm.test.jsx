@@ -110,4 +110,91 @@ describe('RecordForm', () => {
     expect(screen.getByLabelText('カフェイン量')).toHaveValue(100)
     expect(mockNavigate).not.toHaveBeenCalled()
   })
+
+  describe('飲み物プリセット（Version 1.5）', () => {
+    it('TEST-506: プリセットボタンを押すと、飲み物・カフェイン量欄に対応する値がセットされる', async () => {
+      const user = userEvent.setup()
+      renderForm()
+
+      await user.click(screen.getByRole('button', { name: 'コーヒー（90mg）' }))
+
+      expect(screen.getByLabelText('飲み物')).toHaveValue('コーヒー')
+      expect(screen.getByLabelText('カフェイン量')).toHaveValue(90)
+    })
+
+    it('TEST-507: プリセット選択後も、飲み物・カフェイン量を手動で編集できる', async () => {
+      const user = userEvent.setup()
+      renderForm()
+
+      await user.click(screen.getByRole('button', { name: '緑茶（30mg）' }))
+      await user.clear(screen.getByLabelText('カフェイン量'))
+      await user.type(screen.getByLabelText('カフェイン量'), '25')
+
+      expect(screen.getByLabelText('飲み物')).toHaveValue('緑茶')
+      expect(screen.getByLabelText('カフェイン量')).toHaveValue(25)
+    })
+
+    it('TEST-508: 複数のプリセットを連続で選択した場合、最後に選んだ値が反映される', async () => {
+      const user = userEvent.setup()
+      renderForm()
+
+      await user.click(screen.getByRole('button', { name: 'コーヒー（90mg）' }))
+      await user.click(screen.getByRole('button', { name: 'コーラ（35mg）' }))
+
+      expect(screen.getByLabelText('飲み物')).toHaveValue('コーラ')
+      expect(screen.getByLabelText('カフェイン量')).toHaveValue(35)
+    })
+
+    it('TEST-509: プリセットを使わず、従来通り手入力のみで登録できる', async () => {
+      insertRecord.mockResolvedValueOnce({ id: 'test-id' })
+      const user = userEvent.setup()
+      renderForm()
+
+      await user.type(screen.getByLabelText('飲み物'), '手入れコーヒー')
+      await user.type(screen.getByLabelText('カフェイン量'), '120')
+      await user.click(screen.getByRole('button', { name: '登録' }))
+
+      await waitFor(() => {
+        expect(insertRecord).toHaveBeenCalledWith(
+          expect.objectContaining({ drinkName: '手入れコーヒー', caffeineMg: 120 }),
+        )
+      })
+    })
+
+    it('TEST-510: プリセット選択後に送信すると、正しい飲み物・カフェイン量でinsertRecordが呼ばれる', async () => {
+      insertRecord.mockResolvedValueOnce({ id: 'test-id' })
+      const user = userEvent.setup()
+      renderForm()
+
+      await user.click(screen.getByRole('button', { name: 'エナジードリンク（100mg）' }))
+      await user.click(screen.getByRole('button', { name: '登録' }))
+
+      await waitFor(() => {
+        expect(insertRecord).toHaveBeenCalledWith(
+          expect.objectContaining({ drinkName: 'エナジードリンク', caffeineMg: 100 }),
+        )
+      })
+    })
+
+    it('目安である旨の注意書きが表示される', () => {
+      renderForm()
+
+      expect(
+        screen.getByText('※カフェイン量は目安です。選択後に変更できます。'),
+      ).toBeInTheDocument()
+    })
+
+    it('TEST-511: 登録処理中は、既存の入力欄と同様にプリセットボタンも無効化される', async () => {
+      insertRecord.mockReturnValue(new Promise(() => {}))
+      const user = userEvent.setup()
+      renderForm()
+
+      await user.type(screen.getByLabelText('飲み物'), 'コーヒー')
+      await user.type(screen.getByLabelText('カフェイン量'), '100')
+      await user.click(screen.getByRole('button', { name: '登録' }))
+
+      expect(await screen.findByRole('button', { name: '登録中...' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'コーヒー（90mg）' })).toBeDisabled()
+    })
+  })
 })

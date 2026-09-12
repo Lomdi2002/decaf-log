@@ -132,6 +132,37 @@
   gap: 0.5rem;
 }
 
+.drink-preset-picker {
+  margin-bottom: 1rem;
+}
+
+.drink-preset-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.drink-preset-chip {
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid #cfc7bb;
+  background-color: #ffffff;
+  color: #2b2320;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.drink-preset-chip:disabled {
+  color: #b8a698;
+  cursor: not-allowed;
+}
+
+.drink-preset-note {
+  margin: 0.5rem 0 0;
+  color: #6b6259;
+  font-size: 0.8rem;
+}
+
 .input-with-suffix input {
   flex: 1;
 }
