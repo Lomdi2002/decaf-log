@@ -27,10 +27,16 @@ describe('App routing', () => {
     expect(screen.getByRole('heading', { name: '摂取履歴' })).toBeInTheDocument()
   })
 
-  it('ボトムナビゲーションに主要3項目が表示される', () => {
+  it('/settings で設定画面が表示される', () => {
+    renderAt('/settings')
+    expect(screen.getByRole('heading', { name: '設定' })).toBeInTheDocument()
+  })
+
+  it('ボトムナビゲーションに主要4項目が表示される', () => {
     renderAt('/')
     expect(screen.getByRole('link', { name: 'ホーム' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '記録' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '履歴' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '設定' })).toBeInTheDocument()
   })
 })
