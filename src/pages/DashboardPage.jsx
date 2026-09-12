@@ -2,16 +2,25 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import CaffeineSummary from '../components/CaffeineSummary'
 import RecentRecords from '../components/RecentRecords'
+import GoalProgress from '../components/GoalProgress'
 import { fetchRecords } from '../lib/caffeineRecords'
+import { fetchGoal } from '../lib/appSettings'
 import { isToday } from '../lib/dateUtils'
 
 const FETCH_ERROR_MESSAGE = 'データの取得に失敗しました。もう一度お試しください。'
+const GOAL_FETCH_ERROR_MESSAGE = '目標を取得できませんでした。'
 const RECENT_RECORDS_LIMIT = 3
 
 function DashboardPage() {
   const [records, setRecords] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
+
+  // 目標値（Version 1.2）は記録データとは独立して取得・表示する。
+  // 目標値の取得中・失敗が「今日の合計」「最近の記録」の表示を妨げないようにするため。
+  const [goal, setGoal] = useState(null)
+  const [isGoalLoading, setIsGoalLoading] = useState(true)
+  const [goalError, setGoalError] = useState('')
 
   const loadRecords = useCallback(async () => {
     setIsLoading(true)
@@ -27,9 +36,27 @@ function DashboardPage() {
     }
   }, [])
 
+  const loadGoal = useCallback(async () => {
+    setIsGoalLoading(true)
+    setGoalError('')
+    try {
+      const data = await fetchGoal()
+      setGoal(data)
+    } catch (error) {
+      console.error('目標値の取得に失敗しました:', error)
+      setGoalError(GOAL_FETCH_ERROR_MESSAGE)
+    } finally {
+      setIsGoalLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     loadRecords()
   }, [loadRecords])
+
+  useEffect(() => {
+    loadGoal()
+  }, [loadGoal])
 
   if (isLoading) {
     return (
@@ -63,6 +90,10 @@ function DashboardPage() {
   return (
     <div className="page">
       <CaffeineSummary totalMg={todayTotalMg} />
+
+      {isGoalLoading && <p>読み込み中...</p>}
+      {!isGoalLoading && goalError && <p className="page-error">{goalError}</p>}
+      {!isGoalLoading && !goalError && <GoalProgress todayTotalMg={todayTotalMg} goalMg={goal} />}
 
       {records.length === 0 ? (
         <div className="empty-state">
