@@ -310,6 +310,12 @@
   font-size: 0.9rem;
 }
 
+.record-item-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
 .empty-state {
   text-align: center;
   color: #6b6259;

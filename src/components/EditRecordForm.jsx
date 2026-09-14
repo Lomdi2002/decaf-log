@@ -1,17 +1,16 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import DrinkPresetPicker from './DrinkPresetPicker'
-import { insertRecord } from '../lib/caffeineRecords'
+import { updateRecord } from '../lib/caffeineRecords'
 import { toDatetimeLocalValue } from '../lib/dateUtils'
 import { validateRecordInput } from '../lib/recordValidation'
 
-const SUBMIT_ERROR_MESSAGE = '記録の登録に失敗しました。もう一度お試しください。'
+const SUBMIT_ERROR_MESSAGE = '記録の更新に失敗しました。もう一度お試しください。'
 
-function RecordForm() {
+function EditRecordForm({ record }) {
   const navigate = useNavigate()
-  const [drinkName, setDrinkName] = useState('')
-  const [caffeineMg, setCaffeineMg] = useState('')
-  const [consumedAt, setConsumedAt] = useState(() => toDatetimeLocalValue())
+  const [drinkName, setDrinkName] = useState(record.drinkName)
+  const [caffeineMg, setCaffeineMg] = useState(String(record.caffeineMg))
+  const [consumedAt, setConsumedAt] = useState(() => toDatetimeLocalValue(record.consumedAt))
   const [errors, setErrors] = useState({})
   const [submitError, setSubmitError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -20,7 +19,7 @@ function RecordForm() {
     event.preventDefault()
 
     if (isSubmitting) {
-      // 登録中の二重送信を防止する
+      // 更新中の二重送信を防止する
       return
     }
 
@@ -35,29 +34,21 @@ function RecordForm() {
     setIsSubmitting(true)
 
     try {
-      await insertRecord({
+      await updateRecord(record.id, {
         drinkName: drinkName.trim(),
         caffeineMg: Number(caffeineMg),
         consumedAt: new Date(consumedAt).toISOString(),
       })
-      navigate('/')
+      navigate('/history')
     } catch (error) {
-      console.error('記録の登録に失敗しました:', error)
+      console.error('記録の更新に失敗しました:', error)
       setSubmitError(SUBMIT_ERROR_MESSAGE)
       setIsSubmitting(false)
     }
   }
 
   function handleCancel() {
-    navigate('/')
-  }
-
-  // Version 1.5: プリセットは「飲み物」「カフェイン量」へ値をセットするだけの
-  // 入力ショートカット。選択中プリセットを表すstateは持たず、選択後も
-  // 両欄を自由に手動編集できる（既存のvalidate/handleSubmitは変更しない）。
-  function handlePresetSelect(preset) {
-    setDrinkName(preset.name)
-    setCaffeineMg(String(preset.caffeineMg))
+    navigate('/history')
   }
 
   return (
@@ -74,8 +65,6 @@ function RecordForm() {
         />
         {errors.drinkName && <p className="form-error">{errors.drinkName}</p>}
       </div>
-
-      <DrinkPresetPicker onSelect={handlePresetSelect} disabled={isSubmitting} />
 
       <div className="form-field">
         <label htmlFor="caffeineMg">カフェイン量</label>
@@ -110,7 +99,7 @@ function RecordForm() {
       {submitError && <p className="form-error">{submitError}</p>}
 
       <button type="submit" className="button button-primary" disabled={isSubmitting}>
-        {isSubmitting ? '登録中...' : '登録'}
+        {isSubmitting ? '保存中...' : '保存'}
       </button>
       <button
         type="button"
@@ -124,4 +113,4 @@ function RecordForm() {
   )
 }
 
-export default RecordForm
+export default EditRecordForm

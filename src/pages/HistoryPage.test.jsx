@@ -134,6 +134,18 @@ describe('HistoryPage', () => {
     expect(screen.getByText('コーヒー')).toBeInTheDocument()
   })
 
+  it('TEST-624: 記録ごとに「編集」リンクが表示され、/records/:id/editを指す（Version 1.6）', async () => {
+    fetchRecords.mockResolvedValueOnce([
+      { id: '1', drinkName: 'コーヒー', caffeineMg: 100, consumedAt: '2026-09-12T10:00:00+09:00' },
+    ])
+
+    renderPage()
+
+    expect(await screen.findByText('コーヒー')).toBeInTheDocument()
+    const editLink = screen.getByRole('link', { name: '編集' })
+    expect(editLink).toHaveAttribute('href', '/records/1/edit')
+  })
+
   it('削除失敗時はエラーメッセージを表示し記録を残す', async () => {
     fetchRecords.mockResolvedValueOnce([
       { id: '1', drinkName: 'コーヒー', caffeineMg: 100, consumedAt: '2026-09-12T10:00:00+09:00' },

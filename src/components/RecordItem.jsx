@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { formatDate, formatTime } from '../lib/dateUtils'
 
 function RecordItem({ record, onDelete }) {
@@ -18,9 +19,14 @@ function RecordItem({ record, onDelete }) {
           <span>{formatTime(record.consumedAt)}</span>
         </p>
       </div>
-      <button type="button" className="button button-danger" onClick={handleDeleteClick}>
-        削除
-      </button>
+      <div className="record-item-actions">
+        <Link to={`/records/${record.id}/edit`} className="button button-secondary">
+          編集
+        </Link>
+        <button type="button" className="button button-danger" onClick={handleDeleteClick}>
+          削除
+        </button>
+      </div>
     </li>
   )
 }

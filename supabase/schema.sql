@@ -126,3 +126,38 @@ with check (true);
 insert into public.app_settings (id, daily_caffeine_goal_mg)
 values (1, null)
 on conflict (id) do nothing;
+
+
+-- Decaf Log - Version 1.6
+-- caffeine_records テーブルへのUPDATE権限追加（カフェイン記録編集機能）
+--
+-- 前提:
+-- 編集可能な項目は drink_name / caffeine_mg / consumed_at の3つのみ。
+-- id と created_at はanonからUPDATEできない状態を維持するため、
+-- テーブル全体へのUPDATE権限ではなく、この3カラムに限定した
+-- カラムレベルのGRANTのみを許可する。
+
+-- Version 1.0で設定した「UPDATE不許可」を一旦取り消した上で、
+-- 3カラムに限定したUPDATE権限のみを付与し直す。
+revoke update
+on table public.caffeine_records
+from anon;
+
+grant update (drink_name, caffeine_mg, consumed_at)
+on table public.caffeine_records
+to anon;
+
+-- id・created_atはこのGRANTに含まれないため、anonからは引き続き
+-- UPDATEできない。
+
+-- 既存ポリシーがある場合に備えて削除
+drop policy if exists "Allow public update access to caffeine_records"
+on public.caffeine_records;
+
+-- 公開更新（行レベルの制限はなし。カラムレベルの制限は上記GRANTで担保する）
+create policy "Allow public update access to caffeine_records"
+on public.caffeine_records
+for update
+to anon
+using (true)
+with check (true);
