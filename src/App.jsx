@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage'
 import RecordPage from './pages/RecordPage'
 import HistoryPage from './pages/HistoryPage'
 import SettingsPage from './pages/SettingsPage'
+import EditRecordPage from './pages/EditRecordPage'
 import './App.css'
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Route path="/record" element={<RecordPage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/records/:id/edit" element={<EditRecordPage />} />
         </Routes>
       </main>
       <BottomNavigation />
